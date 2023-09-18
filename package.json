@@ -1,0 +1,26 @@
+{
+  "name": "abbott-module-1-homework",
+  "version": "1.0.0",
+  "description": "Welcome to BigCorp, the wildly successful company you've just joined. Fortunately, BigCorp achieved all of its goals for this quarter - projects are going great, money is flowing in, and there are plenty of opportunities to create solid benefit programs for all employees around the world.",
+  "main": "index.js",
+  "scripts": {
+    "build-client": "cd bigcorp-lotteries-client && npm run build",
+    "prod": "npm run build-client && NODE_ENV=production node -r dotenv/config script.js",
+    "dev": "NODE_ENV=development node -r dotenv/config script.js",
+    "finalize-lottery": "node -r dotenv/config scripts/finalizeLottery.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+
+  },
+  "author": "Rigved Patil",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "redis": "^4.6.8",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1",
+    "random": "^4.1.0"
+  }
+}
