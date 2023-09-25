@@ -1,7 +1,7 @@
 export async function onRegisterClick() {
-  const nameInput = document.getElementById('name');
+  const nameInput = document.getElementById('name') as HTMLInputElement;
   const checkboxes = Array.from(
-    document.querySelectorAll('input[type=checkbox]')
+    document.querySelectorAll('input[type=checkbox]') as NodeListOf<HTMLInputElement>
   );
 
   const currName = nameInput.value;
