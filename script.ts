@@ -1,4 +1,36 @@
 // import { cors } from 'cors';
+import {Request, Response} from "express"
+import {Lottery} from "./bigcorp-lotteries-client/types"
+
+// Types
+type RequestBody<T> = {
+  body: T;
+}
+
+type SuccessResponse<T> = {
+  data: T;
+}
+
+type ErrorResponse = {
+  error: string;
+}
+
+type BaseParams<IDType = number> = {
+  id: IDType;
+}
+
+type APIResponse<T> = SuccessResponse<T> | ErrorResponse;
+
+type ResponseStatus = 'Success' | 'Error';
+
+type RegisterRequest = {
+  lotteryId: string;
+  name: string;
+}
+
+type RegisterResponse = {
+  status: ResponseStatus;
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -18,7 +50,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(cors());
 }
 
-client.on('Error', (error) => {
+client.on('Error', (error:Error) => {
   console.error(error);
 });
 
@@ -27,7 +59,7 @@ client.on('Error', (error) => {
 //using limit in order to avoid users putting extremely large payloads for malicious intents
 app.use(express.json({ limit: '10kb' }));
 
-app.post('/lotteries', async (req, res) => {
+app.post('/lotteries', async (req: Request<RequestBody<Lottery>>, res: Response<Lottery | ErrorResponse>): Promise<void> => {
   const { type, name, prize } = req.body;
 
   if (type !== 'simple') {
@@ -44,7 +76,7 @@ app.post('/lotteries', async (req, res) => {
     return;
   }
   const id = ulid.ulid();
-  const newLottery = {
+  const newLottery:Lottery = {
     id,
     name,
     prize,
@@ -61,6 +93,7 @@ app.post('/lotteries', async (req, res) => {
       .lPush('lotteries', id)
       .exec();
 
+      console.log('res',res)
     //await client.disconnect();
     res.json(newLottery);
   } catch (error) {
@@ -69,7 +102,7 @@ app.post('/lotteries', async (req, res) => {
   }
 });
 
-app.get('/lottery/:id', async (req, res) => {
+app.get('/lottery/:id', async (req: Request<BaseParams>, res: Response<Lottery | ErrorResponse>): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -88,16 +121,13 @@ app.get('/lottery/:id', async (req, res) => {
   }
 });
 
-app.get('/lotteries', async (req, res) => {
+app.get('/lotteries', async (req: Request, res: Response<APIResponse<Lottery[]>>): Promise<void> => {
   try {
-    if (!client.isOpen) {
-      client.connect;
-    }
     //await client.connect();
     const lotteryIds = await client.lRange('lotteries', 0, -1);
 
     const transaction = client.multi();
-    lotteryIds.forEach((id) => transaction.hGetAll(`lottery.${id}`));
+    lotteryIds.forEach((id:string) => transaction.hGetAll(`lottery.${id}`));
     const lotteries = await transaction.exec();
 
     //await client.disconnect();
@@ -108,7 +138,7 @@ app.get('/lotteries', async (req, res) => {
   }
 });
 
-app.post('/register', async (req, res) => {
+app.post('/register', async (req: Request<RequestBody<RegisterRequest>>, res: Response<RegisterResponse | ErrorResponse> ): Promise<void> => {
   //console.log(req.body)
   const { lotteryId, name } = req.body;           //unable to retrieve res.body
 
@@ -127,17 +157,20 @@ app.post('/register', async (req, res) => {
     if (!lotteryStatus) {
       throw new Error("A lottery with a given ID doesn't exit");
     }
-    if (lotteryStatus == 'finished') {
+    if (lotteryStatus === 'finished') {
       throw new Error('The lottery with the given ID is finished');
     }
     await client.lPush(`lottery.${lotteryId}.participants`, name);
 
     res.json({ status: 'Success' });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ error: `Failed to register for the lottery: ${error.message}` });
+    if (error instanceof Error){
+      console.error(error);
+      res
+        .status(500)
+        .json({ error: `Failed to register for the lottery: ${error.message}` });
+    }
+
   }
 });
 
