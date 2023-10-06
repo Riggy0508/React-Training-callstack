@@ -3,6 +3,7 @@ import { Snackbar } from '@mui/material';
 interface Props {
   open: boolean;
   onClose: () => void;
+  message?:string;
 }
 
 export default function NewLotteryNotification({ open, onClose }: Props) {

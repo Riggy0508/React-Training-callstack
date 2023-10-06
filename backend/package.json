@@ -11,7 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "scripts": {
-    "build-client": "cd bigcorp-lotteries-client && npm run build ",
+    "build-client": "cd ../web && npm run build ",
     "build:babel": "babel script.ts -d build-babel --extensions '.ts'",
     "build:tsc": "tsc script.ts --outDir build-tsc",
     "dev": "NODE_ENV=development nodemon --exec ts-node -r dotenv/config script.ts",
