@@ -1,6 +1,6 @@
 // import { cors } from 'cors';
 import {Request, Response} from "express"
-import {Lottery} from "./bigcorp-lotteries-client/types"
+import {Lottery} from "../web/types"; // "./bigcorp-lotteries-client/types"
 
 // Types
 type RequestBody<T> = {
@@ -180,5 +180,6 @@ app.listen(port, async() => {
 });
 if (process.env.NODE_ENV === 'production') {
   // Serving the bundled frontend code together with the backend on the same port in production.
-  app.use(express.static('bigcorp-lotteries-client/dist'));
+  app.use(express.static('web/dist'));
+  //app.use(express.static('bigcorp-lotteries-client/dist'));
 }
