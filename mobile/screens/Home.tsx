@@ -8,6 +8,8 @@ import { colors } from '../colors';
 import LotteryList from '../components/LotteryList';
 import useLotteries from '../hooks/useLotteries';
 import useAsyncStorage from '../hooks/useAsyncStorage';
+import { LotteriesSortingContextProvider } from '../context/lotteries-sorting-context';
+import { HomeHeader } from '../components/HomeHeader';
 
 const Home = () => {
   const [selectedLotteries, setSelectedLotteries] = useState<Array<string>>([]);
@@ -42,26 +44,21 @@ const Home = () => {
   const backgroundColor =
     selectedLotteries.length === 0 ? colors.grey : colors.secondary;
 
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        accessibilityRole="button"
-        onPress={() => navigation.navigate('Register', { selectedLotteries })}
-        style={[styles.button, { backgroundColor }]}
-        disabled={selectedLotteries.length === 0}
-      >
-        <Text style={styles.text}>Register</Text>
-      </TouchableOpacity>
-      <LotteryList
-        lotteries={lotteries.data}
-        loading={lotteries.loading}
-        onPress={handleSelect}
-        selectedLotteries={selectedLotteries}
-        registeredLotteries={registeredLotteries || []}
-      />
-      <FAB onPress={() => navigation.navigate('AddLottery')} />
-    </View>
-  );
+    return (
+      <LotteriesSortingContextProvider>
+        <View style={styles.container}>
+          <HomeHeader selectedLotteries={selectedLotteries} />
+          <LotteryList
+            lotteries={lotteries.data}
+            loading={lotteries.loading}
+            onPress={handleSelect}
+            selectedLotteries={selectedLotteries}
+            registeredLotteries={registeredLotteries || []}
+          />
+          <FAB onPress={() => navigation.navigate('AddLottery')} />
+        </View>
+      </LotteriesSortingContextProvider>
+    );
 };
 
 export default Home;

@@ -6,12 +6,16 @@ import {
   useWindowDimensions,
   Pressable,
   Animated,
+  TouchableOpacity,
 } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Lottery } from '../types';
+import { Lottery, LotteryDetailsNavigationProp } from '../types';
 import { colors } from '../colors';
 import SearchInput from './SearchInput';
+import { LotteryDetails } from '../screens/LotteryDetails';
+import {useNavigation} from '@react-navigation/native'
+import { LotteryListSortingOptions, useLotteriesSortingContext } from '../context/lotteries-sorting-context';
 
 type Props = {
   lotteries: Lottery[];
@@ -33,11 +37,15 @@ const LotteryList = ({
   const { width } = useWindowDimensions();
   const scrollY = useRef(new Animated.Value(0)).current;
 
+  const navigation = useNavigation<LotteryDetailsNavigationProp>();//<-- added in part 1
+
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 200],
     outputRange: [200, 60],
     extrapolate: 'clamp',
   });
+
+  const { selectedSorting } = useLotteriesSortingContext();
 
   const opacity = scrollY.interpolate({
     inputRange: [0, 100],
@@ -52,9 +60,16 @@ const LotteryList = ({
   });
 
   const filteredLotteries = useMemo(
-    () => lotteries?.filter((lottery) => lottery.name.includes(filter)),
-    [filter, lotteries],
-  );
+    () =>
+        lotteries
+            ?.filter((lottery) => lottery.name.includes(filter))
+            .sort((a, b) =>
+            selectedSorting === LotteryListSortingOptions.Ascending
+                ? Number(a.prize) - Number(b.prize)
+                : Number(b.prize) - Number(a.prize),
+            ),
+[filter, lotteries, selectedSorting],
+);
 
   const renderItem = ({ item }: { item: Lottery }) => {
     const isDisabled = item.status === 'finished';
@@ -82,7 +97,11 @@ const LotteryList = ({
             <MaterialIcons name="done" size={24} color="black" />
           )}
         </View>
-        <Text style={styles.name}>{item.name}</Text>
+        <TouchableOpacity
+        accessibilityRole='button'
+        onPress={()=>navigation.navigate('LotteryDetails',{id:item.id})}>
+          <Text style={styles.name}>{item.name}</Text>
+        </TouchableOpacity>
         <Text style={styles.prize}>{item.prize}</Text>
         <Text style={styles.id}>{item.id}</Text>
       </Pressable>
