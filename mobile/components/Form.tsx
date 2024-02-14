@@ -9,8 +9,10 @@ import {
 } from 'react-native';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useNewLottery } from '../hooks/useNewLottery';
+import { useDispatch, useSelector } from 'react-redux';
 import { colors } from '../colors';
+import { RootState } from '../store/reducers';
+import { addLottery } from '../store/reducers/lotteryReducer';
 
 const lotterySchema = Yup.object({
   name: Yup.string().min(4).required(),
@@ -19,13 +21,16 @@ const lotterySchema = Yup.object({
 
 type Props = {
   onSubmit: () => void;
+  onNavigateBack: () => void;
 };
 
-const LotteryForm = ({ onSubmit }: Props) => {
-  const { error, loading, createNewLottery } = useNewLottery();
+const LotteryForm = ({ onSubmit, onNavigateBack }: Props) => {
+  const dispatch = useDispatch();
+  const { error, loading } = useSelector((state: RootState) => state.lotteries);
 
-  const handlePress = () => {
-    formik.handleSubmit();
+  const handleClose = () => {
+    formik.resetForm();
+    onNavigateBack();
   };
 
   const formik = useFormik({
@@ -37,8 +42,9 @@ const LotteryForm = ({ onSubmit }: Props) => {
       prize: '',
     },
     onSubmit: async (values) => {
-      await createNewLottery({ name: values.name, prize: values.prize });
+      dispatch(addLottery(values));
       onSubmit();
+      handleClose();
     },
   });
 
@@ -73,7 +79,7 @@ const LotteryForm = ({ onSubmit }: Props) => {
       <Pressable
         accessibilityRole="button"
         style={[styles.button, { backgroundColor }]}
-        onPress={handlePress}
+        onPress={() => formik.handleSubmit()}
         disabled={!formik.isValid}
       >
         {loading ? (
